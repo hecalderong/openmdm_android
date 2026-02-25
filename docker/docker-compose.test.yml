@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    network_mode: host
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-openmdm_android}
+      POSTGRES_USER: ${POSTGRES_USER:-mdm_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mdm_password}
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+  redis:
+    image: redis:7-alpine
+    network_mode: host
+    volumes:
+      - test_redis_data:/data
+
+  backend-tests:
+    image: node:20-alpine
+    network_mode: host
+    working_dir: /workspace/backend
+    environment:
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${POSTGRES_USER:-mdm_user}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-mdm_password}
+      DATABASE_NAME: ${POSTGRES_DB:-openmdm_android}
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-test-secret}
+      JWT_EXPIRATION: 24h
+      PORT: 3000
+      NODE_ENV: test
+      CORS_ORIGIN: "*"
+    volumes:
+      - ../backend:/workspace/backend
+      - backend_node_modules:/workspace/backend/node_modules
+    depends_on:
+      - postgres
+      - redis
+    command: sh -lc "npm install --legacy-peer-deps && npm run test:unit && npm run test:integration && npm run test:e2e"
+
+  frontend-tests:
+    image: node:20-alpine
+    network_mode: host
+    working_dir: /workspace/frontend
+    volumes:
+      - ../frontend:/workspace/frontend
+      - frontend_node_modules:/workspace/frontend/node_modules
+    command: sh -lc "npm install && npm run test"
+
+volumes:
+  test_postgres_data:
+  test_redis_data:
+  backend_node_modules:
+  frontend_node_modules:

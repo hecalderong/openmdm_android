@@ -1,0 +1,28 @@
+# Backend
+node_modules/
+dist/
+uploads/*
+!uploads/.gitkeep
+.env
+*.log
+
+# Docker
+docker/*.env
+!docker/.env.example
+
+# Android
+android-app/*.iml
+android-app/.gradle
+android-app/local.properties
+android-app/.idea
+android-app/build/
+android-app/captures/
+android-app/.cxx/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

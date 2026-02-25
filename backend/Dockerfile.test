@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+RUN npm install --legacy-peer-deps
+
+COPY src ./src
+COPY test ./test
+COPY jest.unit.json ./jest.unit.json
+COPY jest.integration.json ./jest.integration.json
+
+CMD ["sh", "-lc", "npm run test:unit && npm run test:integration && npm run test:e2e"]
